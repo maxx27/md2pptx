@@ -1,0 +1,9 @@
+/.idea/
+/.venv/
+/venv/
+/.vscode/
+*.log
+*.log.?
+__pycache__/
+*.pyc
+/tmp
