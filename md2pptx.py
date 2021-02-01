@@ -17,7 +17,7 @@ def main():
 
     if not os.path.isfile(args.input):
         raise RuntimeError(f'File {args.input} does not exist or not a file')
-    f = open(args.input, 'r')
+    f = open(args.input, 'r', encoding='utf-8')
     md_text = f.read()
     f.close()
     md = marko.Markdown(renderer=PPTXRenderer.PPTXRenderer)
