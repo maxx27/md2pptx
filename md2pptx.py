@@ -21,13 +21,14 @@ def main():
     md_text = f.read()
     f.close()
     md = marko.Markdown(renderer=PPTXRenderer.PPTXRenderer)
-    # md = marko.Markdown(parser=marko.parser.Parser, renderer=PPTXRenderer.PPTXRenderer,
-    #                     extensions=[marko.ext.footnote.Footnote])
+    # md = marko.Markdown(renderer=PPTXRenderer.PPTXRenderer, extensions=[marko.ext.footnote.Footnote])
     parsed = md.parse(md_text)  # md.renderer is created during parse
-    # md.renderer.setup()  # Make configuration like layout
-    if md.render(parsed):
-        # TODO: create an output folder if not exists
-        md.renderer.pres.save(args.output)
+    # md.renderer.setup(template_filename='c:/Work/Trainings/Kubernetes.Suslov/Информация по курсу/ADM-021_Kubernetes_Fundamentals_Eng.pptm',
+    #                   default_layout=11)
+    md.render(parsed)
+    # TODO: create an output folder if not exists
+    # save extention as original or warn
+    md.renderer.pres.save(args.output)
 
 
 if __name__ == '__main__':

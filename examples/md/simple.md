@@ -1,8 +1,10 @@
 # slide 1
 
 Aha
+<!-- comment -->
 
-Gotcha
+Gotcha with `code snippet`.
+  <!-- Another comment -->
 
 ## slide 2
 
