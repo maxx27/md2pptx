@@ -20,10 +20,11 @@ def main():
     f = open(args.input, 'r')
     md_text = f.read()
     f.close()
-    md = marko.Markdown(parser=marko.parser.Parser, renderer=PPTXRenderer.PPTXRenderer,
-                        extensions=[marko.ext.footnote.Footnote])
+    md = marko.Markdown(renderer=PPTXRenderer.PPTXRenderer)
+    # md = marko.Markdown(parser=marko.parser.Parser, renderer=PPTXRenderer.PPTXRenderer,
+    #                     extensions=[marko.ext.footnote.Footnote])
     parsed = md.parse(md_text)  # md.renderer is created during parse
-    md.renderer.setup()  # Make configuration like layout
+    # md.renderer.setup()  # Make configuration like layout
     if md.render(parsed):
         # TODO: create an output folder if not exists
         md.renderer.pres.save(args.output)
