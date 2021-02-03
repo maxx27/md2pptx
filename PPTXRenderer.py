@@ -134,11 +134,11 @@ class PPTXRenderer(Renderer):
         self.render_children_helper(element)
 
     def render_fenced_code(self, element):
-        # TODO: create text frame for code
-        pass
+        left = top = Pt(100)
+        shape = self.slide.shapes.add_textbox(left, top, self.pres.slide_width, self.pres.slide_height)
+        shape.text_frame.text = self.render_children_helper_str(element)
 
     def render_code_span(self, element):
-        """Inline code"""
         self.get_next_run()
         self.run.text = self.render_children_helper_str(element)
         assert self.run.text is not None
