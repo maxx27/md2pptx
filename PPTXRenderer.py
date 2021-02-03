@@ -1,3 +1,4 @@
+import os
 from enum import Enum
 from marko.renderer import Renderer
 import marko.block
@@ -11,6 +12,7 @@ class PPTXRenderer(Renderer):
     def __init__(self):
         self.template_filename = None
         self.default_layout = 1  # for default template
+        self.folder = None
         self.indent = None
         # for presentation content
         self.pres = None
@@ -21,9 +23,10 @@ class PPTXRenderer(Renderer):
         self.run = None
         self.use_first_run = False
 
-    def setup(self, template_filename: str, default_layout: int) -> None:
+    def setup(self, template_filename: str = None, default_layout: int = None, folder: str = None) -> None:
         self.template_filename = template_filename
         self.default_layout = default_layout
+        self.folder = folder
 
     def get_next_pres(self):
         if self.template_filename:
@@ -168,7 +171,8 @@ class PPTXRenderer(Renderer):
 
     def render_image(self, element):
         left = top = Pt(100)
-        pic = self.slide.shapes.add_picture(element.dest, left, top)
+        filename = os.path.join(self.folder if self.folder else '', element.dest)
+        pic = self.slide.shapes.add_picture(filename, left, top)
         if pic.width > self.pres.slide_width:
             k = pic.width / self.pres.slide_width
             pic.width = int(pic.width / k)
