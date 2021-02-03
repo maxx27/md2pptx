@@ -50,15 +50,20 @@ class PPTXRenderer(Renderer):
         self.use_first_run = False
 
     def get_next_paragraph(self):
+        # Special case: if this is first paragraph, then no need to create another one
+        # PowerPoint may create some content (paragraph and run)
         if not self.use_first_para:
             self.use_first_para = True
             self.paragraph = self.text_frame.paragraphs[0]
         else:
             self.paragraph = self.text_frame.add_paragraph()
-            self.paragraph.level = self.indent
+        self.paragraph.level = self.indent-1 if self.indent > 0 else 0
 
-        self.use_first_para = False
-        self.run = self.paragraph.runs[0]
+        if len(self.paragraph.runs) > 0:
+            self.run = self.paragraph.runs[0]
+        else:
+            self.run = self.paragraph.add_run()
+        self.use_first_run = False
 
     def get_next_run(self):
         if not self.use_first_run:
@@ -108,20 +113,25 @@ class PPTXRenderer(Renderer):
         # Do nothing
         pass
 
-    def render_raw_text(self, element) -> str:
+    def render_line_break(self, element):
+        # Do nothing
+        pass
+
+    def render_raw_text(self, element):
         self.get_next_run()
-        return element.children
+        self.run.text = element.children
+
+    def render_list(self, element):
+        self.indent += 1
+        self.render_children_helper(element)
+        self.indent -= 1
+
+    def render_list_item(self, element):
+        self.render_children_helper(element)
 
     def render_paragraph(self, element):
-        # Special case: if this is first paragraph, then no need to create another one
-        if self.paragraph != self.text_frame.paragraphs[0]:
-            self.paragraph = self.text_frame.add_paragraph()
-            self.paragraph.level = self.indent
-            assert len(self.paragraph.runs) == 0
-            self.run = self.paragraph.add_run()
-
+        self.get_next_paragraph()
         self.render_children_helper(element)
-        # TODO: need to take into account element._tight ?
 
     def render_fenced_code(self, element):
         # TODO: create text frame for code
@@ -156,18 +166,19 @@ class PPTXRenderer(Renderer):
             return
         raise RuntimeError(f'Unexpected html block: {element.children}')
 
-    def render_list(self, element):
-        self.indent += 1
-        self.render_children_helper(element)
-        self.indent += 1
-
-    def render_list_item(self, element):
-        self.render_children_helper(element)
-
     def render_image(self, element):
         left = top = Pt(100)
         pic = self.slide.shapes.add_picture(element.dest, left, top)
+        if pic.width > self.pres.slide_width:
+            k = pic.width / self.pres.slide_width
+            pic.width = int(pic.width / k)
+            pic.height = int(pic.height / k)
+        elif pic.height > self.pres.slide_height:
+            k = pic.height / self.pres.slide_height
+            pic.width = int(pic.width / k)
+            pic.height = int(pic.height / k)
 
     def render_link(self, element):
-        element.title
-        element.dest
+        self.get_next_run()
+        self.run.text = self.render_children_helper_str(element)
+        self.run.hyperlink.address = element.dest
