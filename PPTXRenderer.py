@@ -45,6 +45,7 @@ class PPTXRenderer(Renderer):
         self.slide = self.pres.slides.add_slide(title_slide_layout)
         self.text_frame = self.slide.placeholders[1].text_frame
         self.indent = 0
+        self.on_new_slide()
 
     def on_new_slide(self):
         self.paragraph = None
@@ -117,8 +118,7 @@ class PPTXRenderer(Renderer):
         pass
 
     def render_line_break(self, element):
-        # Do nothing
-        pass
+        self.get_next_paragraph()
 
     def render_raw_text(self, element):
         self.get_next_run()
@@ -186,3 +186,9 @@ class PPTXRenderer(Renderer):
         self.get_next_run()
         self.run.text = self.render_children_helper_str(element)
         self.run.hyperlink.address = element.dest
+
+    def render_auto_link(self, element):
+        self.render_link(element)
+
+    def render_link_ref_def(self, element):
+        return
