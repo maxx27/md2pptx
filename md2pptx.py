@@ -13,6 +13,7 @@ def main():
     arg_parser.add_argument('--input-encoding', type=str, default='utf-8', help='Encoding of input file')
     arg_parser.add_argument('--template-file', type=str, default=None, help='Powerpoint file as template')
     arg_parser.add_argument('--layout-number', type=int, default=1, help='Number of layout (starting with 1)')
+    arg_parser.add_argument('--clean-content', action='store_true', help='Remove all slides by template')
     # TODO: calculate output if not specified
     args = arg_parser.parse_args()
 
@@ -25,7 +26,8 @@ def main():
     # md = marko.Markdown(renderer=PPTXRenderer.PPTXRenderer, extensions=[marko.ext.footnote.Footnote])
     parsed = md.parse(md_text)  # md.renderer is created during parse
     folder = os.path.abspath(os.path.dirname(args.input_file))
-    md.renderer.setup(template_filename=args.template_file, default_layout=args.layout_number-1, folder=folder)
+    md.renderer.setup(template_filename=args.template_file, default_layout=args.layout_number-1, folder=folder,
+                      clean_content=args.clean_content)
     md.render(parsed)
     # TODO: create an output folder if not exists
     # save extention as original or warn

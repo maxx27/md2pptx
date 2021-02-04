@@ -12,6 +12,7 @@ class PPTXRenderer(Renderer):
     def __init__(self):
         self.template_filename = None
         self.default_layout = 1  # for default template
+        self.clean_content = False
         self.folder = None
         self.indent = None
         # for presentation content
@@ -23,16 +24,27 @@ class PPTXRenderer(Renderer):
         self.run = None
         self.use_first_run = False
 
-    def setup(self, template_filename: str = None, default_layout: int = None, folder: str = None) -> None:
+    def setup(self, template_filename: str = None, default_layout: int = None, folder: str = None,
+              clean_content: bool = False) -> None:
         self.template_filename = template_filename
         self.default_layout = default_layout
         self.folder = folder
+        self.clean_content = clean_content
+
+    @staticmethod
+    def remove_slide(prs, idx):
+        rId = prs.slides._sldIdLst[idx].rId
+        prs.part.drop_rel(rId)
+        del prs.slides._sldIdLst[idx]
 
     def get_next_pres(self):
         if self.template_filename:
             self.pres = pptx.Presentation(self.template_filename)
         else:
             self.pres = pptx.Presentation()
+        if self.clean_content:
+            while self.pres.slides:
+                self.remove_slide(self.pres, 0)
         self.slide = None
         self.text_frame = None
         self.on_new_slide()
