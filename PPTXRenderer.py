@@ -70,7 +70,7 @@ class PPTXRenderer(Renderer):
             self.paragraph = self.text_frame.paragraphs[0]
         else:
             self.paragraph = self.text_frame.add_paragraph()
-        self.paragraph.level = self.indent-1 if self.indent > 0 else 0
+        self.paragraph.level = self.indent - 1 if self.indent > 0 else 0
 
         if len(self.paragraph.runs) > 0:
             self.run = self.paragraph.runs[0]
@@ -96,10 +96,7 @@ class PPTXRenderer(Renderer):
         children = getattr(element, "children", None)
         if isinstance(children, str):
             return children
-        assert len(children) == 1
-        if isinstance(children[0], marko.inline.RawText):
-            return self.render_children_helper_str(children[0])
-        raise RuntimeError('No string value')
+        return "".join([self.render_children_helper_str(child) for child in children])
 
     def render_children(self, element):
         # For debug purpose: not to miss something
@@ -119,8 +116,7 @@ class PPTXRenderer(Renderer):
 
     def render_heading(self, element):
         self.get_next_slide()
-        assert len(element.children) == 1
-        self.slide.shapes.title.text = element.children[0].children
+        self.slide.shapes.title.text = self.render_children_helper_str(element)
 
     def render_blank_line(self, element):
         # Do nothing

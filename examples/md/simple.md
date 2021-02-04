@@ -22,3 +22,7 @@ Arghhh!
 # Url slide
 
 Here [link](http://www.google.com) for google.
+
+# Slide with `code` span
+
+Yes.
