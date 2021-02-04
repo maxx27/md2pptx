@@ -33,9 +33,6 @@ class PPTXRenderer(Renderer):
             self.pres = pptx.Presentation(self.template_filename)
         else:
             self.pres = pptx.Presentation()
-        self.on_new_pres()
-
-    def on_new_pres(self):
         self.slide = None
         self.text_frame = None
         self.on_new_slide()
