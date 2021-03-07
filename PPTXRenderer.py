@@ -1,7 +1,5 @@
 import os
-from enum import Enum
 from marko.renderer import Renderer
-import marko.block
 import re
 import pptx
 from pptx.util import Pt
@@ -79,6 +77,12 @@ class PPTXRenderer(Renderer):
         self.use_first_run = False
 
     def get_next_run(self):
+
+        # in some cases (header, empty line, quote) we get directly into get_next_run;
+        # if paragraph doesn't exist we must create it
+        if not self.paragraph:
+            self.get_next_paragraph()
+
         if not self.use_first_run:
             self.use_first_run = True
             self.run = self.paragraph.runs[0]
@@ -94,6 +98,8 @@ class PPTXRenderer(Renderer):
 
     def render_children_helper_str(self, element) -> str:
         children = getattr(element, "children", None)
+        if children is None:
+            return ""
         if isinstance(children, str):
             return children
         return "".join([self.render_children_helper_str(child) for child in children])
@@ -152,6 +158,16 @@ class PPTXRenderer(Renderer):
         assert self.run.text is not None
         font = self.run.font
         font.name = 'Consolas'
+
+    def render_quote(self, element):
+        # Quote contains Paragraph
+        # Solution 1: we must render all elements and apply them style afterwards, or
+        # Solution 2: set flags that we are currently render in quote style
+        self.get_next_run()
+        self.run.text = self.render_children_helper_str(element)
+        assert self.run.text is not None
+        font = self.run.font
+        font.italic = True
 
     def render_emphasis(self, element):
         self.get_next_run()
