@@ -183,12 +183,19 @@ class PPTXRenderer(Renderer):
         font = self.run.font
         font.bold = True
 
+    def render_inline_html(self, element):
+        match = re.search(r'<!--(.*?)-->\n?', element.children, flags=re.S)
+        if match:
+            self.slide.notes_slide.notes_text_frame.text += match.groups("1")[0].strip() + '\n'
+            return
+        raise RuntimeError(f'Unrecognized inline html: {element.children}')
+
     def render_html_block(self, element):
         match = re.search(r'<!--(.*?)-->\n?', element.children, flags=re.S)
         if match:
             self.slide.notes_slide.notes_text_frame.text += match.groups("1")[0].strip() + '\n'
             return
-        raise RuntimeError(f'Unexpected html block: {element.children}')
+        raise RuntimeError(f'Unrecognized html block: {element.children}')
 
     def render_image(self, element):
         left = top = Pt(100)

@@ -17,6 +17,12 @@ Arghhh!
 * Two
 * Three
 
+# Inline HTML
+
+- first. <!-- A inline HTML comment -->
+
+- second.
+
 # Empty slide
 
 # Url slide
