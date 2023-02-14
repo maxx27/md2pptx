@@ -1,12 +1,13 @@
 #!/bin/bash -e
 
-# v2021.11.12
+# v2023.02.14
 
 function most_recent {
     local dir="$1"
     local result="$2"
 
-    local output=$(rg --files "$dir" -0 | xargs -0r stat --format '%Y :%n' | sort -nr | cut -d: -f2- | head -n 1)
+    local output=$(find "$dir" -exec stat --format '%Y :%n' {} \; | sort -r | head -n 1 | cut -d: -f2-)
+    # local output=$(rg --files "$dir" -0 | xargs -0r stat --format '%Y :%n' | sort -nr | cut -d: -f2- | head -n 1)
     eval $result="'$output'"
 }
 
@@ -49,7 +50,7 @@ function skip_image_file {
     local name="$1"
     [[ "$name" =~ _draft ]] && return 0
     [[ "$name" =~ _original ]] && return 0
-    [[ "$name" =~ \(original\)  ]] && return 0
+    [[ "$name" =~ \(original\) ]] && return 0
     return 1
 }
 
@@ -74,7 +75,6 @@ function generate_markdown_light {
     cat <<EOF > "$outmarkdown"
 ---
 marp: true
-theme: current
 headingDivider: 3
 paginate: true
 ---
@@ -85,7 +85,6 @@ function generate_markdown_dark {
     cat <<EOF > "$outmarkdown"
 ---
 marp: true
-theme: current
 headingDivider: 3
 class: invert
 paginate: true
@@ -97,7 +96,7 @@ function generate_markdown {
     generate_markdown_$theme
 
     # merge files (except those contains "_draft" and "X.")
-    find "$inputdir" -path "$inputdir/Practice" -prune -o -maxdepth 1 -type f -name "*.md" -print0 | sort -z | while IFS= read -r -d '' file; do
+    find "$inputdir" -maxdepth 1 -path "$inputdir/Practice" -prune -o -type f -name "*.md" -print0 | sort -z | while IFS= read -r -d '' file; do
         skip_md_file "$file" && echo "skip $file" && continue
         echo processing $file
         cat "$file" | \
@@ -131,8 +130,8 @@ function generate_output_pptx {
     python ${md2pptx_dir}/md2pptx.py \
         --input-file "$1" \
         --output-file "$2" \
-        --template-file "pptx/template.pptx" \
-        --template-file "/c/Work/TC/Trainings/My/pptx_template/template.pptx" \
+        --template-file "pptx/dxc_template.pptx" \
+        --template-file "/c/Work/TC/Trainings/My/pptx_template/dxc_template.pptx" \
         --layout-number 12 \
         --clean-content
     # as slides
@@ -141,12 +140,17 @@ function generate_output_pptx {
 
 function generate_output_docx {
     local rpath=$(dirname "$2")
+    local ref
+    if [ -n "$referencedoc" ]; then
+        ref="--reference-doc $referencedoc"
+    fi
     pandoc \
         --standalone \
         --variable pointsize:14p \
         -f markdown+smart \
         -t docx \
         --resource-path "$rpath" \
+        $ref \
         -o "$2" \
         "$1"
 }
@@ -184,6 +188,7 @@ while [[ "$#" -gt 0 ]]; do
         -n|--name) chaptername="$2"; shift ;;
         -f|--format) formats["$2"]=1; shift ;;
         -t|--theme) themes["$2"]=1; shift ;;
+        -r|--reference-docx) referencedoc="$2"; shift ;;
         # -u|--uglify) uglify=1 ;;
         *) echo "Unknown parameter passed: $1"; exit 1 ;;
     esac
@@ -216,12 +221,13 @@ if [ "${#themes[@]}" -eq 0 ]; then
     themes=( [dark]=1 [light]=1 )
 fi
 
-echo "in-dir : $inputdir"
-echo "out-dir: $outputdir"
-echo "name   : $chaptername"
-echo "number : $chapternumber"
-echo "formats: ${!formats[@]}"
-echo "themes : ${!themes[@]}"
+echo "in-dir    : $inputdir"
+echo "out-dir   : $outputdir"
+echo "name      : $chaptername"
+echo "number    : $chapternumber"
+echo "formats   : ${!formats[@]}"
+echo "themes    : ${!themes[@]}"
+echo "reference : $referencedoc"
 echo
 
 #=============================

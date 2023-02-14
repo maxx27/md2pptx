@@ -1,6 +1,9 @@
 #!/bin/bash -e
 
+# v2022.07.29
+
 # most probably you have to install:
+# sudo npm install -g npm
 # npm install -g @marp-team/marp-cli
 
 scriptdir=$(readlink -f "$0")
@@ -16,13 +19,17 @@ output=$(readlink -f "$scriptdir/../output")
 # IFS= rm -rf "$output"/* 2>/dev/null || true
 
 generate=
-for d in "$scriptdir" . ../setup ../../setup ; do
+for d in "$scriptdir" . .. ../.. ../setup ../../setup; do
     if [ -e "$d/generate.sh" ]; then
         generate=$(readlink -f "$d/generate.sh")
         break
     fi
 done
 [ -z $generate ] && echo generate.sh not found && exit 1
+
+if grep -qi microsoft /proc/version; then
+    export CHROME_PATH='/mnt/c/Program Files/Google/Chrome/Application/chrome.exe'
+fi
 
 "$generate" -o "$output" -f docx -t none -i "00. Установка и настройка" -o "$output/00. Установка и настройка"
 "$generate" -o "$output" -f html -f pdf -t dark -t light -i "01. Приступаем"
@@ -40,3 +47,8 @@ done
 "$generate" -o "$output" -f html -f pdf -t dark -t light -i "13. Работа в команде"
 "$generate" -o "$output" -f html -f pdf -t dark -t light -i "14. Метки"
 "$generate" -o "$output" -f html -f pdf -t dark -t light -i "15. Завершаем"
+
+# BUGFIX: under WSL, remove folder `C:\Users\Maxx\AppData\Local\Temp\marp-cli-conversion`
+if grep -qi microsoft /proc/version; then
+    rm -rf ./C\:*
+fi
