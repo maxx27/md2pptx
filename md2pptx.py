@@ -1,8 +1,10 @@
 import argparse
 import os
 import sys
+
 import marko
 import marko.ext.footnote
+
 import PPTXRenderer
 
 
